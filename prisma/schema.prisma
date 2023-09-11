@@ -8,13 +8,14 @@ datasource db {
 }
 
 model Task {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
   updatedAt   DateTime
   title       String
   description String?
   userId      Int
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  TaskMemo    TaskMemo[]
 }
 
 model User {
@@ -25,4 +26,11 @@ model User {
   hashedPassword String
   nickName       String?
   Task           Task[]
+}
+
+model TaskMemo {
+  id     Int    @id @default(autoincrement())
+  taskId Int
+  memo   String
+  Task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
