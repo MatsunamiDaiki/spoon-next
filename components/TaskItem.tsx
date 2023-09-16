@@ -4,14 +4,35 @@ import { PencilAltIcon, TrashIcon } from '@heroicons/react/solid'
 import { Task } from '@prisma/client'
 import useStore from '../store'
 import { useMutateTask } from '../hooks/useMutateTask'
+import { TASK_STATUS } from '../utils/enum'
 
 export const TaskItem: FC<Omit<Task, 'createdAt' | 'updatedAt' | 'userId'>> = ({
   id,
   title,
   description,
+  status
 }) => {
   const update = useStore((state) => state.updateEditedTask)
-  const { deleteTaskMutation } = useMutateTask()
+  const { deleteTaskMutation, updateTaskStatusMutation } = useMutateTask()
+
+  const taskStatusItems = TASK_STATUS.map((task) => {
+    return (
+      <option 
+        value={task.id} 
+        key={task.id}
+      >
+        {task.value}
+      </option>
+    )
+  })
+
+  const handleChangeTaskStatus = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateTaskStatusMutation.mutate({
+      id,
+      status: Number(e.target.value)
+    })
+
+  }
   return (
     <List.Item>
       <div className="float-left mr-10">
@@ -33,6 +54,9 @@ export const TaskItem: FC<Omit<Task, 'createdAt' | 'updatedAt' | 'userId'>> = ({
         />
       </div>
       <span>{title}</span>
+      <select defaultValue={status!} onChange={handleChangeTaskStatus}>
+        {taskStatusItems}
+      </select>
     </List.Item>
   )
 }

@@ -7,3 +7,8 @@ export type EditedTask = {
   title: string
   description?: string | null
 }
+
+export type UpdateStatus = {
+  id: number,
+  status: number
+}
