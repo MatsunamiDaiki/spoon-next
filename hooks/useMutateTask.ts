@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { Task } from '@prisma/client'
 import useStore from '../store'
-import { EditedTask } from '../types'
+import { EditedTask, UpdateStatus } from '../types'
 
 export const useMutateTask = () => {
   const queryClient = useQueryClient()
@@ -61,6 +61,33 @@ export const useMutateTask = () => {
       },
     }
   )
+  const updateTaskStatusMutation = useMutation(
+    async (task: UpdateStatus) => {
+      const res = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/todo/status/${task.id}`,
+        task
+      )
+      return res.data;
+    },
+    {
+      onSuccess: (res, variables) => {
+        const previousTodos = queryClient.getQueryData<Task[]>(['tasks'])
+        if (previousTodos) {
+          queryClient.setQueryData(
+            ['tasks'],
+            previousTodos.map((task) => (task.id === res.id ? res : task))
+          )
+        }
+        reset()
+      },
+      onError: (err: any) => {
+        reset()
+        if (err.response.status === 401 || err.response.status === 403) {
+          router.push('/')
+        }
+      },
+    }
+  )
   const deleteTaskMutation = useMutation(
     async (id: number) => {
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/todo/${id}`)
@@ -85,5 +112,10 @@ export const useMutateTask = () => {
     }
   )
 
-  return { createTaskMutation, updateTaskMutation, deleteTaskMutation }
+  return { 
+    createTaskMutation, 
+    updateTaskMutation, 
+    updateTaskStatusMutation, 
+    deleteTaskMutation 
+  }
 }
